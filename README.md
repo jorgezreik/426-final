@@ -1,4 +1,5 @@
-# Core Crawlear
+# Core Crawler
+
 Jorge's and Epi's final project for COS426.
 
 ---
