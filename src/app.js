@@ -10,7 +10,7 @@
 // Much of this code is currently adapted from:
 // https://github.com/mrdoob/three.js/blob/master/examples/misc_controls_pointerlock.html
 
-import { WebGLRenderer, PerspectiveCamera, Vector3, Raycaster, Geometry, Line, LineBasicMaterial } from 'three';
+import { WebGLRenderer, PerspectiveCamera, Vector3, Raycaster, BufferGeometry, BufferAttribute, Line, LineBasicMaterial } from 'three';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
 import { SeedScene } from 'scenes';
 
@@ -29,14 +29,17 @@ let canJump = false;
 let feetRaycaster;
 
 // Global variables for grappling hook
-let initGrapple = false; // True when grapple should be initiated
-let isGrappling = false; // Whenever the player is grappling
+let shootingGrapple = false; // True when grappling hook has been shot
+let returningGrapple = false; // True when grapple hook is returning to player
+let isGrappling = false; // True when grapple has reached intersection point
 let movingTowardGrapple = false;
-let delay = 20; // number of timesteps before grappling
+let delay = 15; // number of timesteps before reaching max distance
 let counter = 0; // counter to keep track of the current delay
 let grappleDist = 20;
-let grappleHookPos = new Vector3();
+let grappleDestination = null;
+let grappleLine = null;
 let grappleRaycaster;
+
 
 let prevTime = performance.now();
 const velocity = new Vector3();
@@ -51,6 +54,27 @@ const direction = new Vector3();
 
 init();
 animate();
+
+// Helper function that updates the line's position in world space
+// Source: https://stackoverflow.com/questions/31399856/drawing-a-line-with-three-js-dynamically/31411794#31411794
+function updateLinePositions(origin, direction){
+    var positions = grappleLine.geometry.attributes.position.array;
+
+    var x = origin.x;
+    var y = origin.y;
+    var z = origin.z;
+    var index = 0;
+    for ( var i = 0, l = delay; i < l; i ++ ) {
+
+        positions[ index ++ ] = x;
+        positions[ index ++ ] = y;
+        positions[ index ++ ] = z;
+        x += direction.x * grappleDist/delay;
+        y += direction.y * grappleDist/delay;
+        z += direction.z * grappleDist/delay;
+    }
+    grappleLine.geometry.attributes.position.needsUpdate = true; // required after the first 
+}
 
 function init() {
     // Initializes the scene
@@ -129,36 +153,48 @@ function init() {
     const onMouseDown = (event) => {
         if (controls.isLocked) {
             // Left click
-            if (event.button == 0) {
-
+            if (event.button == 0 && !returningGrapple) {
                 // Sets the origin of the ray to be the camera's position in world space
                 camera.getWorldPosition(grappleRaycaster.ray.origin);
+                // grappleRaycaster.ray.origin = new Vector3(grappleDist/2, grappleDist/2, grappleDist/2); // For testing
+
                 // Sets the ray's direction to be the camera's look vector in world space
                 camera.getWorldDirection(grappleRaycaster.ray.direction);
+                // grappleRaycaster.ray.direction = new Vector3(-1, -1, -1) // For testing
+
+                // temporary until intersections work
+                grappleDestination = grappleRaycaster.ray.origin.clone().addScaledVector(grappleRaycaster.ray.direction, grappleDist);
 
                 // Creates a black line to visualize the ray cast
-                var geometry = new Geometry();
-                geometry.vertices.push(grappleRaycaster.ray.origin);
-                geometry.vertices.push(grappleRaycaster.ray.origin.clone().addScaledVector(grappleRaycaster.ray.direction, grappleDist));
-                var material = new LineBasicMaterial( { color : 0x000000 } );
-                var line = new Line( geometry, material );
-                scene.add( line );
+                var geometry = new BufferGeometry();
+                var positions = new Float32Array(delay * 3); // 3 because point is 3D
+                geometry.setAttribute('position', new BufferAttribute(positions, 3));
+                geometry.setDrawRange(0, counter);
+                var material = new LineBasicMaterial({ color: 0x000000, linewidth: 2 });
+                grappleLine = new Line(geometry,  material);
+                scene.add(grappleLine);
+                updateLinePositions(grappleRaycaster.ray.origin, grappleRaycaster.ray.direction);
+                shootingGrapple = true;
+                counter = 0;
+                console.log("Grappling hook has been fired")
 
-                // Determines if the grapple hook intersects with any objects
-                const grappleInters = grappleRaycaster.intersectObjects(objects);
-                if (grappleInters.length > 0) {
-                    grappleDist.copy(grappleInters[0].point);
-                    initGrapple = true;
-                    isGrappling = false;
-                    counter = 0;
-                    console.log("init grapple");
-                }
+                // WIP
+                // // Determines if the grapple hook intersects with any objects
+                // const grappleInters = grappleRaycaster.intersectObjects(objects);
+                // if (grappleInters.length > 0) {
+                //     grappleDist.copy(grappleInters[0].point);
+                //     shootingGrapple = true;
+                //     isGrappling = false;
+                //     counter = 0;
+                //     console.log("init grapple");
+                // }
+                // console.log(grappleLine)
 
             }
             // Other mouse clicks
-            else if (isGrappling) {
+            else if (event.button == 2 && isGrappling) {
                 movingTowardGrapple = true;
-                console.log("moving toward grapple");
+                console.log("Player is moving toward grappling hook")
             }
         }
         else controls.lock();
@@ -169,16 +205,17 @@ function init() {
     const onMouseUp = (event) => {
         if (controls.isLocked) {
             // Left click
-            if (event.button == 0 && (initGrapple || isGrappling)) {
-                initGrapple = false;
+            if (event.button == 0 && (shootingGrapple || isGrappling)) {
+                shootingGrapple = false;
                 isGrappling = false;
+                returningGrapple = true;
                 movingTowardGrapple = false;
-                console.log("release grapple");
+                console.log("Grappling hook has been released")
             }
             // Other mouse clicks
             else if (isGrappling) {
                 movingTowardGrapple = false;
-                console.log("not moving toward grapple");
+                console.log("Player is no longer moving to grappling hook")
             }
         }
     }
@@ -220,17 +257,9 @@ function init() {
 function animate() {
     requestAnimationFrame(animate);
 
-    const timeStamp = performance.now();
+    const time = performance.now();
 
     if ( controls.isLocked === true ) {
-        /////////////////////////////////////////////
-        if (counter > delay && initGrapple) {
-            initGrapple = false;
-            isGrappling = true;
-            console.log("is grappling");
-        }
-        else counter++;
-        /////////////////////////////////////////////
 
         // Uses raycasting to determine if the player's
         // feet are on the ground to prevent infinite jumping
@@ -240,7 +269,7 @@ function animate() {
         const feetInters = feetRaycaster.intersectObjects(objects);
         const grounded = feetInters.length > 0;
 
-        const delta = ( timeStamp - prevTime ) / 1000;
+        const delta = (time - prevTime) / 1000;
 
         // Currently calculates gravity generally downwards
         // Should have it to where you calculate the netforce of the
@@ -272,11 +301,46 @@ function animate() {
             controls.getObject().position.y = 10;
 
             canJump = true;
-
         }
 
+        
+        /////////////////////////////////////////////
+        // If the grappling hook has been fired
+        if (shootingGrapple) {
+            if (counter < delay) {
+                counter++;
+            }
+            else {
+                shootingGrapple = false;
+                isGrappling = true;
+                console.log("Grappling hook has reached max distance");
+            }
+        }
+        // If the grappling hook has been released
+        else if (returningGrapple) {
+            if (counter > 0) {
+                counter--;
+            }
+            else {
+                returningGrapple = false;
+                console.log("Grappling hook has returned to player");
+                // Removes the grapple line from the scene
+                scene.remove(grappleLine)
+                grappleLine = null;
+                grappleDestination = null;
+            }
+        }
+        // Updates the position of the grappling hook if the grappling
+        // hook's line exists and the grappling hook's destination exists
+        if (grappleLine != null && grappleDestination != null) {
+            const origin = camera.getWorldPosition(new Vector3());
+            const direction = new Vector3().subVectors(grappleDestination, origin);
+            updateLinePositions(origin, direction);
+            grappleLine.geometry.setDrawRange(0, counter);
+        }
+        /////////////////////////////////////////////
     }
-    prevTime = timeStamp;
+    prevTime = time;
     renderer.render(scene, camera);
-    scene.update && scene.update(timeStamp);
+    scene.update && scene.update(time);
 };
