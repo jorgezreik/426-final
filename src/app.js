@@ -10,10 +10,13 @@
 // Much of this code is currently adapted from:
 // https://github.com/mrdoob/three.js/blob/master/examples/misc_controls_pointerlock.html
 
-import { WebGLRenderer, PerspectiveCamera, Vector3, Raycaster, BufferGeometry, BufferAttribute, Line, LineBasicMaterial } from 'three';
+import { WebGLRenderer, PerspectiveCamera, Vector3, Raycaster, Object3D } from 'three';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
 import { SeedScene } from 'scenes';
 
+import { Line2 } from 'three/examples/jsm/lines/Line2.js';
+import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
+import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 
 let camera, scene, renderer, controls;
 
@@ -33,12 +36,16 @@ let shootingGrapple = false; // True when grappling hook has been shot
 let returningGrapple = false; // True when grapple hook is returning to player
 let isGrappling = false; // True when grapple has reached intersection point
 let movingTowardGrapple = false;
-let delay = 15; // number of timesteps before reaching max distance
+let delay = 7; // number of timesteps before reaching max distance
 let counter = 0; // counter to keep track of the current delay
 let grappleDist = 20;
 let grappleDestination = null;
 let grappleLine = null;
 let grappleRaycaster;
+let grappleOrigin = new Object3D();
+grappleOrigin.position.copy(new Vector3(0.75, -0.35, 0));
+let grappleLineWidth = 5;
+const pointScale = 10; // increases the number of points on the line by this factor
 
 
 let prevTime = performance.now();
@@ -57,23 +64,23 @@ animate();
 
 // Helper function that updates the line's position in world space
 // Source: https://stackoverflow.com/questions/31399856/drawing-a-line-with-three-js-dynamically/31411794#31411794
-function updateLinePositions(origin, direction){
-    var positions = grappleLine.geometry.attributes.position.array;
+function updateLinePositions(positions, origin, direction){
+    // var positions = grappleLine.geometry.attributes.position.array;
 
     var x = origin.x;
     var y = origin.y;
     var z = origin.z;
     var index = 0;
-    for ( var i = 0, l = delay; i < l; i ++ ) {
+    for ( var i = 0, l = (delay * pointScale); i < l; i ++ ) {
 
         positions[ index ++ ] = x;
         positions[ index ++ ] = y;
         positions[ index ++ ] = z;
-        x += direction.x * grappleDist/delay;
-        y += direction.y * grappleDist/delay;
-        z += direction.z * grappleDist/delay;
+        x += direction.x * grappleDist/(delay * pointScale);
+        y += direction.y * grappleDist/(delay * pointScale);
+        z += direction.z * grappleDist/(delay * pointScale);
     }
-    grappleLine.geometry.attributes.position.needsUpdate = true; // required after the first 
+    // grappleLine.geometry.attributes.position.needsUpdate = true; // required after the first 
 }
 
 function init() {
@@ -81,7 +88,8 @@ function init() {
     scene = new SeedScene();
 
     // Initializes the camera and pointer lock controls
-    camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+    camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.01, 1000);
+    camera.add(grappleOrigin);
     camera.position.y = 10;
 
     controls = new PointerLockControls( camera, document.body );
@@ -155,25 +163,25 @@ function init() {
             // Left click
             if (event.button == 0 && !returningGrapple) {
                 // Sets the origin of the ray to be the camera's position in world space
-                camera.getWorldPosition(grappleRaycaster.ray.origin);
-                // grappleRaycaster.ray.origin = new Vector3(grappleDist/2, grappleDist/2, grappleDist/2); // For testing
+                grappleDestination = new Vector3()
+                camera.getWorldPosition(grappleDestination)
+                grappleDestination.addScaledVector(camera.getWorldDirection(new Vector3()), grappleDist)
+                
+                grappleOrigin.getWorldPosition(grappleRaycaster.ray.origin);
+                grappleRaycaster.ray.direction.subVectors(grappleDestination, grappleRaycaster.ray.origin).normalize();
 
-                // Sets the ray's direction to be the camera's look vector in world space
-                camera.getWorldDirection(grappleRaycaster.ray.direction);
-                // grappleRaycaster.ray.direction = new Vector3(-1, -1, -1) // For testing
-
-                // temporary until intersections work
-                grappleDestination = grappleRaycaster.ray.origin.clone().addScaledVector(grappleRaycaster.ray.direction, grappleDist);
-
-                // Creates a black line to visualize the ray cast
-                var geometry = new BufferGeometry();
-                var positions = new Float32Array(delay * 3); // 3 because point is 3D
-                geometry.setAttribute('position', new BufferAttribute(positions, 3));
-                geometry.setDrawRange(0, counter);
-                var material = new LineBasicMaterial({ color: 0x000000, linewidth: 2 });
-                grappleLine = new Line(geometry,  material);
+                // Creates the line for the grappling hook
+                var geometry = new LineGeometry();
+                var positions = new Float32Array((delay * pointScale) * 3); // 3 because point is 3D
+                updateLinePositions(positions, grappleRaycaster.ray.origin, grappleRaycaster.ray.direction);
+                geometry.setPositions(positions);
+                geometry.maxInstancedCount = 0;
+                var material = new LineMaterial({ color: 0x000000, linewidth: grappleLineWidth, dashed: false});
+                material.resolution.set(window.innerWidth, window.innerHeight); // resolution of the viewport
+                grappleLine = new Line2(geometry,  material);
+                grappleLine.computeLineDistances();
+				grappleLine.scale.set(1, 1, 1);
                 scene.add(grappleLine);
-                updateLinePositions(grappleRaycaster.ray.origin, grappleRaycaster.ray.direction);
                 shootingGrapple = true;
                 counter = 0;
                 console.log("Grappling hook has been fired")
@@ -260,7 +268,6 @@ function animate() {
     const time = performance.now();
 
     if ( controls.isLocked === true ) {
-
         // Uses raycasting to determine if the player's
         // feet are on the ground to prevent infinite jumping
         // *** This doesn't account for the camera's roation
@@ -332,11 +339,14 @@ function animate() {
         }
         // Updates the position of the grappling hook if the grappling
         // hook's line exists and the grappling hook's destination exists
+        // TODO bug fix
         if (grappleLine != null && grappleDestination != null) {
-            const origin = camera.getWorldPosition(new Vector3());
-            const direction = new Vector3().subVectors(grappleDestination, origin);
-            updateLinePositions(origin, direction);
-            grappleLine.geometry.setDrawRange(0, counter);
+            // const positions = new Float32Array((delay * pointScale) * 3); // 3 because point is 3D
+            // const origin = grappleOrigin.getWorldPosition(new Vector3());
+            // const direction = new Vector3().subVectors(grappleDestination, origin).normalize();
+            // updateLinePositions(positions, origin, direction);
+            // grappleLine.geometry.setPositions(positions);
+            grappleLine.geometry.maxInstancedCount = counter * pointScale;
         }
         /////////////////////////////////////////////
     }
