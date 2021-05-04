@@ -10,8 +10,9 @@
 // Much of this code is currently adapted from:
 // https://github.com/mrdoob/three.js/blob/master/examples/misc_controls_pointerlock.html
 
-import { WebGLRenderer, PerspectiveCamera, Vector3, Raycaster, Object3D } from 'three';
+import { WebGLRenderer, PerspectiveCamera, Vector3, Raycaster, Object3D, Quaternion, Euler } from 'three';
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
+import { CustomLockControls } from './CustomLockControls';
 import { SeedScene } from 'scenes';
 
 import { Line2 } from 'three/examples/jsm/lines/Line2.js';
@@ -30,6 +31,8 @@ let moveLeft = false;
 let moveRight = false;
 let canJump = false;
 let feetRaycaster;
+
+let maxSpeed = 50;
 
 // Global variables for grappling hook
 let shootingGrapple = false; // True when grappling hook has been shot
@@ -55,18 +58,19 @@ const direction = new Vector3();
 //const color = new THREE.Color();
 
 // Global variables for gravity and planet logic
-// const planetCenter = new Vector3();
-// const gravity = 9.8;
-// const playerMass = 100;
+const planetCenter = new Vector3(0, 0, 0);
+const gravity = 9.8;
+const playerMass = 1;
 
 init();
 animate();
 
+
 // Helper function that updates the line's position in world space
 // Source: https://stackoverflow.com/questions/31399856/drawing-a-line-with-three-js-dynamically/31411794#31411794
-function updateLinePositions(positions, origin, direction){
-    // var positions = grappleLine.geometry.attributes.position.array;
-
+function updateLinePositions(positions, origin, destination){
+    const direction = new Vector3().subVectors(destination, origin).normalize();
+    const distance = origin.distanceTo(destination);
     var x = origin.x;
     var y = origin.y;
     var z = origin.z;
@@ -76,11 +80,10 @@ function updateLinePositions(positions, origin, direction){
         positions[ index ++ ] = x;
         positions[ index ++ ] = y;
         positions[ index ++ ] = z;
-        x += direction.x * grappleDist/(delay * pointScale);
-        y += direction.y * grappleDist/(delay * pointScale);
-        z += direction.z * grappleDist/(delay * pointScale);
+        x += direction.x * distance/(delay * pointScale);
+        y += direction.y * distance/(delay * pointScale);
+        z += direction.z * distance/(delay * pointScale);
     }
-    // grappleLine.geometry.attributes.position.needsUpdate = true; // required after the first 
 }
 
 function init() {
@@ -90,8 +93,12 @@ function init() {
     // Initializes the camera and pointer lock controls
     camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.01, 1000);
     camera.add(grappleOrigin);
-    camera.position.y = 10;
+    camera.position.y = 0;
+    camera.position.z = 10;
+    camera.lookAt(new Vector3());
 
+    // Uncomment line below to use the custom version of pointer lock controls
+    // controls = new CustomLockControls( camera, document.body );
     controls = new PointerLockControls( camera, document.body );
     scene.add(controls.getObject());
 
@@ -173,7 +180,7 @@ function init() {
                 // Creates the line for the grappling hook
                 var geometry = new LineGeometry();
                 var positions = new Float32Array((delay * pointScale) * 3); // 3 because point is 3D
-                updateLinePositions(positions, grappleRaycaster.ray.origin, grappleRaycaster.ray.direction);
+                updateLinePositions(positions, grappleRaycaster.ray.origin, grappleDestination);
                 geometry.setPositions(positions);
                 geometry.maxInstancedCount = 0;
                 var material = new LineMaterial({ color: 0x000000, linewidth: grappleLineWidth, dashed: false});
@@ -199,7 +206,7 @@ function init() {
                 // console.log(grappleLine)
 
             }
-            // Other mouse clicks
+            // Right click while grappling
             else if (event.button == 2 && isGrappling) {
                 movingTowardGrapple = true;
                 console.log("Player is moving toward grappling hook")
@@ -212,7 +219,7 @@ function init() {
 
     const onMouseUp = (event) => {
         if (controls.isLocked) {
-            // Left click
+            // Release left click
             if (event.button == 0 && (shootingGrapple || isGrappling)) {
                 shootingGrapple = false;
                 isGrappling = false;
@@ -220,8 +227,8 @@ function init() {
                 movingTowardGrapple = false;
                 console.log("Grappling hook has been released")
             }
-            // Other mouse clicks
-            else if (isGrappling) {
+            // Release right click while grappling
+            else if (event.button == 2 && isGrappling) {
                 movingTowardGrapple = false;
                 console.log("Player is no longer moving to grappling hook")
             }
@@ -271,48 +278,85 @@ function animate() {
         // Uses raycasting to determine if the player's
         // feet are on the ground to prevent infinite jumping
         // *** This doesn't account for the camera's roation
+        // *** Currently unused
         feetRaycaster.ray.origin.copy(controls.getObject().position);
         feetRaycaster.ray.origin.y -= 10;
         const feetInters = feetRaycaster.intersectObjects(objects);
         const grounded = feetInters.length > 0;
 
+        // Time delta
         const delta = (time - prevTime) / 1000;
 
-        // Currently calculates gravity generally downwards
-        // Should have it to where you calculate the netforce of the
-        // player
+        // Player movement vectors
         velocity.x -= velocity.x * 10.0 * delta;
         velocity.z -= velocity.z * 10.0 * delta;
-        // velocity.y -= gravity * playerMass * delta; // 100.0 = mass
 
         direction.z = Number( moveForward ) - Number( moveBackward );
         direction.x = Number( moveRight ) - Number( moveLeft );
-        direction.normalize(); // this ensures consistent movements in all directions
+        direction.normalize();
 
         if ( moveForward || moveBackward ) velocity.z -= direction.z * moveSpeed * delta;
         if ( moveLeft || moveRight ) velocity.x -= direction.x * moveSpeed * delta;
 
-        if (grounded) {
-            velocity.y = Math.max( 0, velocity.y );
-            canJump = true;
+        // Gravity towards planet center
+        const currPos = camera.getWorldPosition(new Vector3());
+        const gravDirection = new Vector3().subVectors(currPos, planetCenter).normalize();
+        velocity.addScaledVector(gravDirection, -gravity * playerMass * delta); // Gravity
+
+
+        // if (grounded) {
+        //     velocity.y = Math.max( 0, velocity.y );
+        //     canJump = true;
+        // }
+        
+    
+        // If the grappling hook exists in world space, use grappling hook behavior
+        if (grappleLine != null && grappleDestination != null) { 
+            const grappleDirection = new Vector3().subVectors(grappleDestination, currPos).normalize();
+            const distance = grappleDestination.distanceTo(currPos);
+            // If the grappling hook has reached its destination point...
+            if (isGrappling) {
+                // Moves towards grappling hook; this behavior isn't physically simulated yet
+                if (movingTowardGrapple) {
+                    if (distance > 0.5) {
+                        // Doesn't adjust velocity currently because of bugs
+                        camera.position.addScaledVector(grappleDirection, 50 * delta);
+                    }
+                    // Cancels movement towards grappling hook if too close
+                    // This is WIP to prevent buggy behavior
+                    else {
+                        movingTowardGrapple = false;
+                    }
+                    
+                }
+                // Prevents the player from moving too far from the grappling hook
+                if (distance > grappleDist) {
+                    // Based on constraints from Assignment 5
+                    camera.position.addScaledVector(grappleDirection, (distance-grappleDist/distance) * delta)
+                    // velocity.copy(grappleDirection.multiplyScalar(10*delta)); // Doesn't adjust velocity currently because of bugs
+                }
+            }
         }
 
-        controls.moveRight( - velocity.x * delta );
-        controls.moveForward( - velocity.z * delta );
+        velocity.x = Math.min(maxSpeed, Math.max(-moveSpeed, velocity.x));
+        velocity.y = Math.min(maxSpeed, Math.max(-moveSpeed, velocity.y));
+        velocity.z = Math.min(maxSpeed, Math.max(-moveSpeed, velocity.z));
+        controls.moveRight(-velocity.x * delta);
+        controls.moveForward(-velocity.z * delta);
+        controls.getObject().position.y += (velocity.y * delta); // new behavior
 
-        controls.getObject().position.y += ( velocity.y * delta ); // new behavior
+        // if ( controls.getObject().position.y < 10 ) {
 
-        if ( controls.getObject().position.y < 10 ) {
+        //     velocity.y = 0;
+        //     controls.getObject().position.y = 10;
 
-            velocity.y = 0;
-            controls.getObject().position.y = 10;
-
-            canJump = true;
-        }
+        //     canJump = true;
+        // }
 
         
         /////////////////////////////////////////////
         // If the grappling hook has been fired
+
         if (shootingGrapple) {
             if (counter < delay) {
                 counter++;
@@ -339,13 +383,11 @@ function animate() {
         }
         // Updates the position of the grappling hook if the grappling
         // hook's line exists and the grappling hook's destination exists
-        // TODO bug fix
         if (grappleLine != null && grappleDestination != null) {
-            // const positions = new Float32Array((delay * pointScale) * 3); // 3 because point is 3D
-            // const origin = grappleOrigin.getWorldPosition(new Vector3());
-            // const direction = new Vector3().subVectors(grappleDestination, origin).normalize();
-            // updateLinePositions(positions, origin, direction);
-            // grappleLine.geometry.setPositions(positions);
+            const positions = new Float32Array((delay * pointScale) * 3); // 3 because point is 3D
+            const origin = grappleOrigin.getWorldPosition(new Vector3());
+            updateLinePositions(positions, origin, grappleDestination);
+            grappleLine.geometry.setPositions(positions);
             grappleLine.geometry.maxInstancedCount = counter * pointScale;
         }
         /////////////////////////////////////////////
