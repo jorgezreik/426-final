@@ -5,8 +5,8 @@ class BasicLights extends Group {
         // Invoke parent Group() constructor with our args
         super(...args);
 
-        const point = new PointLight(0xaaaaaa, 0.3, 0);
-        const hemi = new HemisphereLight(0xaa99cc, 0x7a6699, 0.5);
+        const point = new PointLight(0xaaaaaa, 0.4, 0);
+        const hemi = new HemisphereLight(0xaa99cc, 0x7a6699, 0.7);
 
 
         this.add(hemi, point);

@@ -10,6 +10,7 @@ import {
     DoubleSide,
     BackSide,
     MeshPhongMaterial,
+    VertexColors,
 } from 'three';
 import SimplexNoise from 'simplex-noise';
 import { BufferGeometryUtils } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -27,7 +28,7 @@ class Planet extends Group {
             sharpnessFactor: 2,
             sharpnessDepth: 3,
             threshold: 0.3,
-            scale: 15,
+            scale: 200,
             distWeight: 0.3,
         };
 
@@ -353,7 +354,7 @@ class Planet extends Group {
         const boundInitialize = this.initialize.bind(this);
         // Populate GUI
         this.state.gui
-            .add(this.state, 'resolution', 2, 200, 1)
+            .add(this.state, 'resolution', 2, 300, 1)
             .onFinishChange(boundInitialize);
         this.state.gui
             .add(this.state, 'factor', 1, 10)
@@ -368,7 +369,7 @@ class Planet extends Group {
             .add(this.state, 'threshold', 0, 1)
             .onFinishChange(boundInitialize);
         this.state.gui
-            .add(this.state, 'scale', 1, 50)
+            .add(this.state, 'scale', 1, 200)
             .onFinishChange(boundInitialize);
         this.state.gui
             .add(this.state, 'distWeight', 0, 1)
@@ -446,19 +447,23 @@ class Planet extends Group {
                     dist = Math.min(1, Math.max(0, dist));
 
                     const edge = 0.9;
-                    const sigma = 1.7956;
-                    const f = 40;
-                    const t = f * (dist - edge);
+                    const sigma = 0.01;
+                    const t = dist - edge;
                     const gaussian = Math.exp(t ** 2 / (-2 * sigma ** 2));
-                    // Variation of Mexican Hat where sigma is not ^2 in first term
-                    // https://en.wikipedia.org/wiki/Ricker_wavelet
-                    const wavelet = (1 - t ** 2 / sigma) * gaussian;
 
-                    noise =
-                        (1 - this.state.distWeight) * noise +
-                        this.state.distWeight * (1 - dist);
-                    if (wavelet > 0) noise += (1 - noise) * wavelet;
-                    else noise += noise * wavelet;
+                    // Add dist term
+                    if (dist < edge) {
+                        noise =
+                            (1 - this.state.distWeight) * noise +
+                            this.state.distWeight * (1 - dist / edge);
+                    } else {
+                        noise +=
+                            ((1 - noise) * (dist ** 2 - edge)) /
+                            (1 - edge ** 2);
+                    }
+
+                    // Add gaussian term
+                    noise *= 1 - gaussian;
 
                     // Clamp
                     noise = Math.min(1, Math.max(0, noise));
@@ -557,19 +562,116 @@ class Planet extends Group {
                 }
             }
         }
+
         geometry.setAttribute(
             'position',
             new BufferAttribute(new Float32Array(vertices), 3)
         );
-        geometry = BufferGeometryUtils.mergeVertices(geometry);
+        // geometry = BufferGeometryUtils.mergeVertices(geometry);
 
         geometry.computeVertexNormals();
 
         const material = new MeshPhongMaterial({
             color: 0xaaaaaa,
-            side: DoubleSide,
+            side: BackSide,
+            vertexColors: VertexColors,
         });
         material.flatShading = true;
+
+        const baseColors = [
+            0xffffff,
+            0xfce1a4,
+            0xfabf7b,
+            0xf08f6e,
+            0xe05c5c,
+            0xd12959,
+            0xab1866,
+            0x6e005f,
+        ];
+
+        const outsideColors = [
+            0xffffff,
+            0x888888,
+            0x1f5a1a,
+            0xedce8f,
+            0x3341c3,
+        ];
+
+        const colorAttribute = [];
+
+        for (let i = 0; i < vertices.length; i += 9) {
+            let colors;
+            let hardCutoffs;
+
+            const v = [];
+            for (let j = 0; j < 9; j += 3) {
+                v.push(
+                    new Vector3(
+                        vertices[i + j],
+                        vertices[i + j + 1],
+                        vertices[i + j + 2]
+                    )
+                );
+            }
+            const position = v[0]
+                .clone()
+                .add(v[1])
+                .add(v[2])
+                .divideScalar(3)
+                .divideScalar(scale / 2);
+            const dist = Math.min(
+                1,
+                Math.sqrt(position.x ** 2 + position.y ** 2 + position.z ** 2)
+            );
+
+            // Account for empty middle
+            dist = (dist - this.state.distWeight) / (1 - this.state.distWeight);
+            // Account for edge
+            dist = (dist + 0.075) / (1 - 0.075);
+
+            if (dist > 1) {
+                dist = 1 - (dist - 0.02 - 1) / 0.1;
+                colors = outsideColors;
+                hardCutoffs = true;
+            } else {
+                colors = baseColors;
+                hardCutoffs = false;
+            }
+
+            dist = Math.max(0.01, Math.min(0.99, dist));
+
+            let fractionalIndex = dist * (colors.length - 1);
+
+            if (hardCutoffs) {
+                if (fractionalIndex % 1 < 0.5) {
+                    fractionalIndex = Math.floor(fractionalIndex) + (fractionalIndex % 1) / 1.5;
+                } else {
+                    fractionalIndex = Math.ceil(fractionalIndex) - (1 - (fractionalIndex % 1)) / 1.5;
+                }
+            }
+
+            const lowerColor = new Color(colors[Math.floor(fractionalIndex)]);
+            const upperColor = new Color(colors[Math.ceil(fractionalIndex)]);
+
+            const newColor = lowerColor
+                .multiplyScalar(Math.ceil(fractionalIndex) - fractionalIndex)
+                .add(
+                    upperColor.multiplyScalar(
+                        fractionalIndex - Math.floor(fractionalIndex)
+                    )
+                );
+
+            const newColorComponents = [newColor.r, newColor.g, newColor.b];
+            colorAttribute.push(...newColorComponents);
+            colorAttribute.push(...newColorComponents);
+            colorAttribute.push(...newColorComponents);
+        }
+
+        geometry.setAttribute(
+            'color',
+            new BufferAttribute(new Float32Array(colorAttribute), 3)
+        );
+
         const terrain = new Mesh(geometry, material);
 
         return terrain;
