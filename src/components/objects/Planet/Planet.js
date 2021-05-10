@@ -567,7 +567,7 @@ class Planet extends Group {
             'position',
             new BufferAttribute(new Float32Array(vertices), 3)
         );
-        // geometry = BufferGeometryUtils.mergeVertices(geometry);
+        geometry = BufferGeometryUtils.mergeVertices(geometry);
 
         geometry.computeVertexNormals();
 
@@ -599,29 +599,20 @@ class Planet extends Group {
 
         const colorAttribute = [];
 
-        for (let i = 0; i < vertices.length; i += 9) {
+        const verts = geometry.attributes.position.array;
+        const _c1 = new Color();
+        const _c2 = new Color();
+        for (let i = 0; i < verts.length; i += 3) {
             let colors;
             let hardCutoffs;
 
-            const v = [];
-            for (let j = 0; j < 9; j += 3) {
-                v.push(
-                    new Vector3(
-                        vertices[i + j],
-                        vertices[i + j + 1],
-                        vertices[i + j + 2]
-                    )
-                );
-            }
-            const position = v[0]
-                .clone()
-                .add(v[1])
-                .add(v[2])
-                .divideScalar(3)
-                .divideScalar(scale / 2);
             const dist = Math.min(
                 1,
-                Math.sqrt(position.x ** 2 + position.y ** 2 + position.z ** 2)
+                Math.sqrt(
+                    (verts[i] / scale * 2) ** 2 +
+                        (verts[i + 1] / scale * 2) ** 2 +
+                        (verts[i + 2] / scale * 2) ** 2
+                )
             );
 
             // Account for empty middle
@@ -644,14 +635,18 @@ class Planet extends Group {
 
             if (hardCutoffs) {
                 if (fractionalIndex % 1 < 0.5) {
-                    fractionalIndex = Math.floor(fractionalIndex) + (fractionalIndex % 1) / 1.5;
+                    fractionalIndex =
+                        Math.floor(fractionalIndex) +
+                        (fractionalIndex % 1) / 1.5;
                 } else {
-                    fractionalIndex = Math.ceil(fractionalIndex) - (1 - (fractionalIndex % 1)) / 1.5;
+                    fractionalIndex =
+                        Math.ceil(fractionalIndex) -
+                        (1 - (fractionalIndex % 1)) / 1.5;
                 }
             }
 
-            const lowerColor = new Color(colors[Math.floor(fractionalIndex)]);
-            const upperColor = new Color(colors[Math.ceil(fractionalIndex)]);
+            const lowerColor = _c1.set(colors[Math.floor(fractionalIndex)]);
+            const upperColor = _c2.set(colors[Math.ceil(fractionalIndex)]);
 
             const newColor = lowerColor
                 .multiplyScalar(Math.ceil(fractionalIndex) - fractionalIndex)
@@ -662,8 +657,6 @@ class Planet extends Group {
                 );
 
             const newColorComponents = [newColor.r, newColor.g, newColor.b];
-            colorAttribute.push(...newColorComponents);
-            colorAttribute.push(...newColorComponents);
             colorAttribute.push(...newColorComponents);
         }
 
