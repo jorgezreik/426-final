@@ -1,5 +1,5 @@
 import { Quaternion, Vector3 } from 'three';
-import { PointerLockController } from 'controllers';
+import { PointerLockController, GrapplingController } from 'controllers';
 
 const _up = new Vector3();
 const _otherUp = new Vector3();
@@ -7,7 +7,7 @@ const _quaternion = new Quaternion();
 const _posY = new Vector3(0, 1, 0);
 
 class PlayerController {
-    constructor(cameraController, canvas, document) {
+    constructor(cameraController, canvas, document, scene) {
         this.state = {
             acceleration: new Vector3(0, 0, 0),
             velocity: new Vector3(0, 0, 0),
@@ -23,6 +23,8 @@ class PlayerController {
             cameraController.camera,
             canvas
         );
+
+        this.grapplingController = new GrapplingController(this.controls, document, scene)
 
         this.cameraController.camera.lookAt(0, 0, 0);
 
@@ -102,6 +104,8 @@ class PlayerController {
             .copy(_posY)
             .applyQuaternion(this.cameraController.camera.quaternion);
 
+        this.grapplingController.update()
+
         // Update velocity
         this.state.velocity
             .copy(this.state.cameraVelocity)
@@ -109,7 +113,7 @@ class PlayerController {
         this.state.velocity.applyQuaternion(
             _quaternion.setFromUnitVectors(_otherUp, _up)
         );
-
+        
         // Update position
         this.state.position.addScaledVector(
             this.state.velocity,

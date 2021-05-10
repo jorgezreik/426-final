@@ -24,7 +24,7 @@ document.body.appendChild(canvas);
 
 // Initialize controllers
 const cameraController = new CameraController();
-const playerController = new PlayerController(cameraController, canvas, document);
+const playerController = new PlayerController(cameraController, canvas, document, scene);
 
 // Render loop
 const onAnimationFrameHandler = (timeStamp) => {
