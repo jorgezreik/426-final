@@ -1,6 +1,6 @@
 # Core Crawler: Intermediary Report
 
-* By Epi Torres and Jorge Zreik *
+By Epi Torres and Jorge Zreik
 
 Live Demo: [https://jorgezreik.github.io/426-final/](https://jorgezreik.github.io/426-final/)
 
