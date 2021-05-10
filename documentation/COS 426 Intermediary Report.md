@@ -2,8 +2,6 @@
 
 * By Epi Torres and Jorge Zreik *
 
-Live Demo: [https://jorgezreik.github.io/426-final/](https://jorgezreik.github.io/426-final/)
-
 ## Abstract
 
 Several games incorporate grappling hook mechanics or 3D procedural generation; however, few games meaningfully use both. As a result, this project develops Core Crawler, a 3D game that implements grappling hook mechanics and procedural terrain generation in a way that produces a thrilling and replayable gameplay experience. To do this, we have implemented the marching cubes algorithm for procedural terrain generation, quaternion basis changes for camera logic, and raycasting for the grappling hook so far. In the future, we will implement physical simulation using verlet integration, collisions using uniform grids, and collectible spawning using rejection sampling. This approach has shown positive results in terms of load times, FPS, and initial feedback, and we plan to continue our evaluation as we continue development. 
@@ -97,10 +95,10 @@ We pledge our honor that this report represents our own work according to Univer
 
 ## Works Cited
 
-[1] Sebastian Lague, “Coding Adventure: Marching Cubes”, May 6th 2019, YouTube, [https://www.youtube.com/watch?v=M3iI2l0ltbE](https://www.youtube.com/watch?v=M3iI2l0ltbE)
+[1] Sebastian Lague, “Coding Adventure: Marching Cubes”, May 6th 2019, YouTube, https://www.youtube.com/watch?v=M3iI2l0ltbE
 
-[2] Feng Lee, Attack on Titan Tribute Game, [https://attack-on-titan-tribute-game.en.softonic.com](https://attack-on-titan-tribute-game.en.softonic.com)
+[2] Feng Lee, Attack on Titan Tribute Game, https://attack-on-titan-tribute-game.en.softonic.com
 
-[3] Oskar Stålberg, “Fairly even irregular quads grid in a hex,” July 7th 2019, Twitter, [https://twitter.com/osksta/status/1147881669350891521](https://twitter.com/osksta/status/1147881669350891521)
+[3] Oskar Stålberg, “Fairly even irregular quads grid in a hex,” July 7th 2019, Twitter, https://twitter.com/osksta/status/1147881669350891521
 
-[4] Paul Bourke, “Polygonising a Scalar Field (Marching Cubes),” May 1994, [http://paulbourke.net/geometry/polygonise/](http://paulbourke.net/geometry/polygonise/)
+[4] Paul Bourke, “Polygonising a Scalar Field (Marching Cubes),” May 1994, http://paulbourke.net/geometry/polygonise/
