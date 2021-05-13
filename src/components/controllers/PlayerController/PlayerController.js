@@ -6,6 +6,9 @@ const _otherUp = new Vector3();
 const _quaternion = new Quaternion();
 const _posY = new Vector3(0, 1, 0);
 
+// TODO: Remove
+let _wasColliding = true;
+
 class PlayerController {
     constructor(cameraController, canvas, document, scene) {
         this.state = {
@@ -24,7 +27,13 @@ class PlayerController {
             canvas
         );
 
-        this.grapplingController = new GrapplingController(this.controls, document, scene)
+        this.terrainVertices = scene.children[0].vertexVectors;
+
+        this.grapplingController = new GrapplingController(
+            this.controls,
+            document,
+            scene
+        );
 
         this.cameraController.camera.lookAt(0, 0, 0);
 
@@ -104,7 +113,7 @@ class PlayerController {
             .copy(_posY)
             .applyQuaternion(this.cameraController.camera.quaternion);
 
-        this.grapplingController.update()
+        this.grapplingController.update();
 
         // Update velocity
         this.state.velocity
@@ -113,12 +122,20 @@ class PlayerController {
         this.state.velocity.applyQuaternion(
             _quaternion.setFromUnitVectors(_otherUp, _up)
         );
-        
+
         // Update position
         this.state.position.addScaledVector(
             this.state.velocity,
             timeElapsed * this.movementFactor
         );
+
+        // Check collision
+        let isColliding = false;
+        for (const v of this.terrainVertices) {
+            if (v.distanceTo(this.state.position) < 1) isColliding = true;
+        }
+        if (isColliding !== _wasColliding) console.log(isColliding);
+        _wasColliding = isColliding;
 
         this.cameraController.update(this.state.position);
 

@@ -1,6 +1,6 @@
 # Core Crawler: Intermediary Report
 
-* By Epi Torres and Jorge Zreik *
+*By Epi Torres and Jorge Zreik*
 
 ## Abstract
 
