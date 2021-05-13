@@ -6,6 +6,9 @@ const _otherUp = new Vector3();
 const _quaternion = new Quaternion();
 const _posY = new Vector3(0, 1, 0);
 
+// TODO: Remove
+let _wasColliding = true;
+
 class PlayerController {
     constructor(cameraController, canvas, document, scene) {
         this.state = {
@@ -23,7 +26,16 @@ class PlayerController {
             cameraController.camera,
             canvas
         );
-        scene.add(cameraController.camera);
+      
+        this.terrainVertices = scene.children[0].vertexVectors;
+
+        this.grapplingController = new GrapplingController(
+            this.controls,
+            document,
+            scene
+        );
+      
+        // scene.add(cameraController.camera);
 
         this.cameraController.camera.lookAt(0, 0, 0);
 
@@ -115,7 +127,7 @@ class PlayerController {
         this.state.velocity.applyQuaternion(
             _quaternion.setFromUnitVectors(_otherUp, _up)
         );
-        
+      
         this.state.velocity.add(this.grapplingController.velocity);
 
         // Applies gravity if the player is far enough away from the center
@@ -123,11 +135,20 @@ class PlayerController {
                                 this.state.position.y ** 2 + 
                                 this.state.position.z ** 2;
         this.state.velocity.addScaledVector(_up, -0.75);
+
         // Update position
         this.state.position.addScaledVector(
             this.state.velocity,
             timeElapsed * this.movementFactor
         );
+
+        // Check collision
+        let isColliding = false;
+        for (const v of this.terrainVertices) {
+            if (v.distanceTo(this.state.position) < 1) isColliding = true;
+        }
+        if (isColliding !== _wasColliding) console.log(isColliding);
+        _wasColliding = isColliding;
 
         this.grapplingController.update(timeElapsed); // Grappling hook may also update position
         this.cameraController.update(this.state.position);

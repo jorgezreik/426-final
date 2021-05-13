@@ -23,7 +23,7 @@ class Planet extends Group {
         // Init state
         this.state = {
             gui: parent.state.gui,
-            resolution: 200,
+            resolution: 150,
             factor: 7,
             sharpnessFactor: 2,
             sharpnessDepth: 3,
@@ -395,13 +395,13 @@ class Planet extends Group {
         const scale = this.state.scale;
         /* const verts = this.generateVerts(scalarField, scale);
         this.add(verts); */
-        const terrain = this.generateTerrain(
+        const [terrain, outerTerrain] = this.generateTerrain(
             scalarField,
             this.state.threshold,
             scale
         );
 
-        this.add(terrain);
+        this.add(terrain, outerTerrain);
     }
 
     // Creates a scalar field with size points in every dimension
@@ -513,7 +513,11 @@ class Planet extends Group {
         let geometry = new BufferGeometry();
         const vertices = [];
 
+        let outerGeometry = new BufferGeometry();
+        const outerVertices = [];
+
         const length = scalarField.length;
+        const zeroVector = new Vector3(0, 0, 0);
 
         for (let x = 0; x < length - 1; x++) {
             for (let y = 0; y < length - 1; y++) {
@@ -553,30 +557,66 @@ class Planet extends Group {
                             interpolatedVerts[triangulation[i + 1]],
                             interpolatedVerts[triangulation[i]],
                         ];
-                        for (const v of values) {
-                            vertices.push(v.x);
-                            vertices.push(v.y);
-                            vertices.push(v.z);
+                        if (
+                            values[0].distanceTo(zeroVector) <
+                            (0.9 * scale) / 2
+                        ) {
+                            for (const v of values) {
+                                vertices.push(v.x);
+                                vertices.push(v.y);
+                                vertices.push(v.z);
+                            }
+                        } else {
+                            for (const v of values) {
+                                outerVertices.push(v.x);
+                                outerVertices.push(v.y);
+                                outerVertices.push(v.z);
+                            }
                         }
                     }
                 }
             }
         }
-
         geometry.setAttribute(
             'position',
             new BufferAttribute(new Float32Array(vertices), 3)
         );
         geometry = BufferGeometryUtils.mergeVertices(geometry);
+        outerGeometry.setAttribute(
+            'position',
+            new BufferAttribute(new Float32Array(outerVertices), 3)
+        );
+
+        // Generate vertices as vectors
+        const vertexVectors = [];
+        for (let i = 0; i < geometry.attributes.position.array.length; i += 3) {
+            vertexVectors.push(
+                new Vector3(
+                    geometry.attributes.position.array[i],
+                    geometry.attributes.position.array[i + 1],
+                    geometry.attributes.position.array[i + 2]
+                )
+            );
+        }
+
+        this.vertexVectors = vertexVectors;
 
         geometry.computeVertexNormals();
+        outerGeometry.computeVertexNormals();
 
         const material = new MeshPhongMaterial({
+            color: 0xffffff,
+            side: BackSide,
+            vertexColors: VertexColors,
+            flatShading: true,
+        });
+
+        const outerMaterial = new MeshBasicMaterial({
             color: 0xaaaaaa,
             side: BackSide,
             vertexColors: VertexColors,
+            flatShading: true,
         });
-        material.flatShading = true;
 
         const baseColors = [
             0xffffff,
@@ -593,25 +633,24 @@ class Planet extends Group {
             0xffffff,
             0x888888,
             0x1f5a1a,
+            0x1f5a1a,
             0xedce8f,
+            0x3341c3,
             0x3341c3,
         ];
 
-        const colorAttribute = [];
-
-        const verts = geometry.attributes.position.array;
         const _c1 = new Color();
         const _c2 = new Color();
-        for (let i = 0; i < verts.length; i += 3) {
-            let colors;
-            let hardCutoffs;
 
+        const colorAttribute = [];
+        const verts = geometry.attributes.position.array;
+        for (let i = 0; i < verts.length; i += 3) {
             const dist = Math.min(
                 1,
                 Math.sqrt(
-                    (verts[i] / scale * 2) ** 2 +
-                        (verts[i + 1] / scale * 2) ** 2 +
-                        (verts[i + 2] / scale * 2) ** 2
+                    ((verts[i] / scale) * 2) ** 2 +
+                        ((verts[i + 1] / scale) * 2) ** 2 +
+                        ((verts[i + 2] / scale) * 2) ** 2
                 )
             );
 
@@ -620,33 +659,12 @@ class Planet extends Group {
             // Account for edge
             dist = (dist + 0.075) / (1 - 0.075);
 
-            if (dist > 1) {
-                dist = 1 - (dist - 0.02 - 1) / 0.1;
-                colors = outsideColors;
-                hardCutoffs = true;
-            } else {
-                colors = baseColors;
-                hardCutoffs = false;
-            }
-
             dist = Math.max(0.01, Math.min(0.99, dist));
 
-            let fractionalIndex = dist * (colors.length - 1);
+            let fractionalIndex = dist * (baseColors.length - 1);
 
-            if (hardCutoffs) {
-                if (fractionalIndex % 1 < 0.5) {
-                    fractionalIndex =
-                        Math.floor(fractionalIndex) +
-                        (fractionalIndex % 1) / 1.5;
-                } else {
-                    fractionalIndex =
-                        Math.ceil(fractionalIndex) -
-                        (1 - (fractionalIndex % 1)) / 1.5;
-                }
-            }
-
-            const lowerColor = _c1.set(colors[Math.floor(fractionalIndex)]);
-            const upperColor = _c2.set(colors[Math.ceil(fractionalIndex)]);
+            const lowerColor = _c1.set(baseColors[Math.floor(fractionalIndex)]);
+            const upperColor = _c2.set(baseColors[Math.ceil(fractionalIndex)]);
 
             const newColor = lowerColor
                 .multiplyScalar(Math.ceil(fractionalIndex) - fractionalIndex)
@@ -660,14 +678,79 @@ class Planet extends Group {
             colorAttribute.push(...newColorComponents);
         }
 
+        const outerColorAttribute = [];
+        const outerVerts = outerGeometry.attributes.position.array;
+        for (let i = 0; i < outerVerts.length; i += 9) {
+            let dist = [];
+            for (let j = 0; j < 9; j += 3) {
+                dist.push(
+                    Math.min(
+                        1,
+                        Math.sqrt(
+                            ((outerVerts[i + j] / scale) * 2) ** 2 +
+                                ((outerVerts[i + j + 1] / scale) * 2) ** 2 +
+                                ((outerVerts[i + j + 2] / scale) * 2) ** 2
+                        )
+                    )
+                );
+            }
+            dist = (dist[0] + dist[1] + dist[2]) / 3;
+
+            // Account for empty middle
+            dist = (dist - this.state.distWeight) / (1 - this.state.distWeight);
+            // Account for edge
+            dist = (dist + 0.075) / (1 - 0.075);
+
+            // Change distance to highest planet point
+            dist = 1 - (dist - 0.02 - 1) / 0.1;
+            dist = Math.max(0.01, Math.min(0.99, dist));
+
+            let fractionalIndex = dist * (outsideColors.length - 1);
+
+            /* // Hard cutoffs
+            if (fractionalIndex % 1 < 0.5) {
+                fractionalIndex =
+                    Math.floor(fractionalIndex) + (fractionalIndex % 1) / 1.5;
+            } else {
+                fractionalIndex =
+                    Math.ceil(fractionalIndex) -
+                    (1 - (fractionalIndex % 1)) / 1.5;
+            } */
+
+            const lowerColor = _c1.set(
+                outsideColors[Math.floor(fractionalIndex)]
+            );
+            const upperColor = _c2.set(
+                outsideColors[Math.ceil(fractionalIndex)]
+            );
+
+            const newColor = lowerColor
+                .multiplyScalar(Math.ceil(fractionalIndex) - fractionalIndex)
+                .add(
+                    upperColor.multiplyScalar(
+                        fractionalIndex - Math.floor(fractionalIndex)
+                    )
+                );
+
+            const newColorComponents = [newColor.r, newColor.g, newColor.b];
+            outerColorAttribute.push(...newColorComponents);
+            outerColorAttribute.push(...newColorComponents);
+            outerColorAttribute.push(...newColorComponents);
+        }
+
         geometry.setAttribute(
             'color',
             new BufferAttribute(new Float32Array(colorAttribute), 3)
         );
+        outerGeometry.setAttribute(
+            'color',
+            new BufferAttribute(new Float32Array(outerColorAttribute), 3)
+        );
 
         const terrain = new Mesh(geometry, material);
+        const outerTerrain = new Mesh(outerGeometry, outerMaterial);
 
-        return terrain;
+        return [terrain, outerTerrain];
     }
 
     // Finds the interpolated vertex on edge i
