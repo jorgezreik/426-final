@@ -1,6 +1,7 @@
 import * as Dat from 'dat.gui';
 import { Scene, Color, Fog } from 'three';
 import { Planet } from 'objects';
+import { GemGenerator } from 'objects';
 import { BasicLights } from 'lights';
 
 class SeedScene extends Scene {
@@ -22,6 +23,7 @@ class SeedScene extends Scene {
 
         // Add meshes to scene
         const planet = new Planet(this);
+        const gemGenerator = new GemGenerator(this);
         const lights = new BasicLights();
         this.add(planet, lights);
 
