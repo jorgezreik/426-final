@@ -137,8 +137,10 @@ class PlayerController {
         // Check collision
         let isColliding = false;
         for (const v of this.terrainVertices) {
-            if (v.distanceToSquared(this.state.position) < 1) isColliding = true;
-            break;
+            if (v.distanceToSquared(this.state.position) < 1) {
+                isColliding = true;
+                break;
+            }
         }
         if (isColliding !== _wasColliding) console.log(isColliding);
         _wasColliding = isColliding;
