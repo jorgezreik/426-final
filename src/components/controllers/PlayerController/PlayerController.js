@@ -28,12 +28,6 @@ class PlayerController {
         );
       
         this.terrainVertices = scene.children[0].vertexVectors;
-
-        this.grapplingController = new GrapplingController(
-            this.controls,
-            document,
-            scene
-        );
       
         // scene.add(cameraController.camera);
 
