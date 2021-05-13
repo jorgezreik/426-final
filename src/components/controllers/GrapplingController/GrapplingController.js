@@ -192,6 +192,9 @@ class GrapplingController {
         this.rope = new Rope();
         document.addEventListener('mousedown', this.onMouseDown.bind(this));
         document.addEventListener('mouseup', this.onMouseUp.bind(this));
+
+        document.addEventListener('keydown', this.onKeyDown.bind(this));
+        document.addEventListener('keyup', this.onKeyUp.bind(this));
     }
 
     onMouseDown(event) {
@@ -210,8 +213,6 @@ class GrapplingController {
                 
                 // Sets up the direction vector
                 _direction.subVectors(_destination, _origin).normalize();
-                // _raycaster.ray.origin.copy(_origin);
-                // _raycaster.ray.direction.subVectors(_destination, _origin).normalize();
 
                 // Creates the line for the grappling hook
                 this.shootingGrapple = true;
@@ -253,6 +254,20 @@ class GrapplingController {
         }
     }
 
+    onKeyDown(event) {
+        if (this.pointerLockController.isLocked && event.key == "Shift" && this.rope.isAttached) {
+            // Release right click while grappling
+            this.rope.pullingPlayer = true;
+        }
+    }
+
+    onKeyUp(event) {
+        if (this.pointerLockController.isLocked && event.key == "Shift" && this.rope.isAttached) {
+            // Release right click while grappling
+            this.rope.pullingPlayer = false;
+        }
+    }
+
     update(timeElapsed) {
         if (this.shootingGrapple || this.returningGrapple || this.rope.isAttached) {    
             _counter += this.shootingGrapple ? this.increment : this.returningGrapple ? -this.increment : 0;
@@ -281,11 +296,14 @@ class GrapplingController {
             if (this.rope.isAttached) {
                 if (this.rope.pullingPlayer) {
                     // Increates the players velocity towards the grappling hook's destination point
-                    this.velocity.addScaledVector(_direction, 0.1 * timeElapsed *this.movementFactor);
+                    this.velocity.addScaledVector(_direction, 0.1 * timeElapsed *this.movementFactor); 
                 }
                 else {
                     // Prevents the player from moving too far from the grappling hook
                     this.state.position.addScaledVector(_direction, 0.5*timeElapsed * (_distance-this.rope.restLength/_distance));
+                    if (_distance > this.rope.restLength) {
+                        this.velocity.addScaledVector(_direction, 0.005 * timeElapsed * (_distance-this.rope.restLength/_distance));
+                    }
                 } 
             }
             this.rope.update();

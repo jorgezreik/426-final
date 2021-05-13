@@ -1,4 +1,4 @@
-import { Mesh, MeshPhongMaterial, Vector3, Quaternion, DoubleSide } from 'three';
+import { Mesh, MeshPhongMaterial, Vector3, DoubleSide } from 'three';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 
 
@@ -16,9 +16,7 @@ const _colors = ['#8cd9ff',
                  '#b5e7ee',
                  '#2190e3'];
 
-const _objUp = new Vector3();
 const _up = new Vector3();
-const _quaternion= new Quaternion();
 
 class Gem {
     constructor(scene, position) {

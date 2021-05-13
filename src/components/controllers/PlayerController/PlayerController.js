@@ -28,8 +28,6 @@ class PlayerController {
         );
       
         this.terrainVertices = scene.children[0].vertexVectors;
-      
-        // scene.add(cameraController.camera);
 
         this.cameraController.camera.lookAt(0, 0, 0);
 
@@ -125,10 +123,7 @@ class PlayerController {
         this.state.velocity.add(this.grapplingController.velocity);
 
         // Applies gravity if the player is far enough away from the center
-        const sqDistFromCenter = this.state.position.x ** 2 +
-                                this.state.position.y ** 2 + 
-                                this.state.position.z ** 2;
-        this.state.velocity.addScaledVector(_up, -0.75);
+        this.state.velocity.addScaledVector(_up, -0.5);
 
         // Update position
         this.state.position.addScaledVector(
@@ -136,15 +131,19 @@ class PlayerController {
             timeElapsed * this.movementFactor
         );
 
+        // Grappling hook may also update position
+        this.grapplingController.update(timeElapsed); 
+
         // Check collision
         let isColliding = false;
         for (const v of this.terrainVertices) {
-            if (v.distanceTo(this.state.position) < 1) isColliding = true;
+            if (v.distanceToSquared(this.state.position) < 1) isColliding = true;
+            break;
         }
         if (isColliding !== _wasColliding) console.log(isColliding);
         _wasColliding = isColliding;
 
-        this.grapplingController.update(timeElapsed); // Grappling hook may also update position
+        
         this.cameraController.update(this.state.position);
 
         this.lastTime = timeStamp;

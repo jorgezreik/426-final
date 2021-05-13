@@ -7,7 +7,6 @@
  *
  */
 import { WebGLRenderer } from 'three';
-import { sRGBEncoding } from 'three';
 import { PlayerController, CameraController } from 'controllers';
 import { SeedScene } from 'scenes';
 
