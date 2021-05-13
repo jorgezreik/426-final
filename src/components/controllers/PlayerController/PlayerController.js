@@ -23,12 +23,16 @@ class PlayerController {
             cameraController.camera,
             canvas
         );
-
-        this.grapplingController = new GrapplingController(this.controls, document, scene)
+        scene.add(cameraController.camera);
 
         this.cameraController.camera.lookAt(0, 0, 0);
 
         this.movementFactor = 15;
+
+        this.grapplingController = new GrapplingController(
+            this.controls, this.state,  
+            this.movementFactor, document, scene
+        );
 
         document.addEventListener('mousedown', this.onMouseDown.bind(this));
         document.addEventListener('keydown', this.onKeyDown.bind(this));
@@ -104,8 +108,6 @@ class PlayerController {
             .copy(_posY)
             .applyQuaternion(this.cameraController.camera.quaternion);
 
-        this.grapplingController.update()
-
         // Update velocity
         this.state.velocity
             .copy(this.state.cameraVelocity)
@@ -114,12 +116,20 @@ class PlayerController {
             _quaternion.setFromUnitVectors(_otherUp, _up)
         );
         
+        this.state.velocity.add(this.grapplingController.velocity);
+
+        // Applies gravity if the player is far enough away from the center
+        const sqDistFromCenter = this.state.position.x ** 2 +
+                                this.state.position.y ** 2 + 
+                                this.state.position.z ** 2;
+        this.state.velocity.addScaledVector(_up, -0.75);
         // Update position
         this.state.position.addScaledVector(
             this.state.velocity,
             timeElapsed * this.movementFactor
         );
 
+        this.grapplingController.update(timeElapsed); // Grappling hook may also update position
         this.cameraController.update(this.state.position);
 
         this.lastTime = timeStamp;

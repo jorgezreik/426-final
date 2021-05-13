@@ -7,6 +7,7 @@
  *
  */
 import { WebGLRenderer } from 'three';
+import { sRGBEncoding } from 'three';
 import { PlayerController, CameraController } from 'controllers';
 import { SeedScene } from 'scenes';
 
@@ -23,7 +24,7 @@ document.body.style.overflow = 'hidden'; // Fix scrolling
 document.body.appendChild(canvas);
 
 // Initialize controllers
-const cameraController = new CameraController();
+const cameraController = new CameraController(scene);
 const playerController = new PlayerController(cameraController, canvas, document, scene);
 
 // Render loop
