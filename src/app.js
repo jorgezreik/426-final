@@ -121,10 +121,22 @@ function initMenu() {
     menuDiv.appendChild(instSpan);
 
     let creditsSpan = document.createElement("SPAN");
-    creditsSpan.innerHTML = `Made by Jorge Zreik and Epi Torres for COS 426!`;
+    creditsSpan.innerHTML = `Made by <strong>Jorge Zreik</strong> and <strong>Epi Torres</strong> for COS 426!<br><br>
+    <strong>References</strong>:<br>
+    https://threejs.org/docs/index.html#manual/en/introduction/Creating-a-scene<br>
+    https://stackoverflow.com/questions/31399856/drawing-a-line-with-three-js-dynamically/31411794#31411794<br>
+    https://github.com/mrdoob/three.js/blob/master/examples/webgl_lines_fat.html<br>
+    https://github.com/mrdoob/three.js/blob/master/examples/physics_ammo_rope.html<br>
+    https://www.color-hex.com/color-palette/25406<br>
+    https://blog.jakoblind.no/css-modules-webpack/<br>
+    https://stackoverflow.com/questions/32896628/how-to-generate-random-integers-which-are-multiples-of-30-in-javascript<br>
+    https://stackoverflow.com/questions/982054/how-to-center-an-element-in-the-middle-of-the-browser-window<br>
+    https://www.npmjs.com/package/material-icons<br>
+    https://chriscourses.com/blog/loading-fonts-webpack<br>
+    http://paulbourke.net/geometry/polygonise/`;
     creditsSpan.hidden = true;
-    creditsSpan.classList.add("infoSpan")
-    creditsSpan.style.overflowY = "hidden";
+    creditsSpan.classList.add("infoSpan");
+    creditsSpan.style.fontSize = "1vw";
     menuDiv.appendChild(creditsSpan);
 
     // Adds the settings button to the screen

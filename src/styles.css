@@ -177,5 +177,5 @@ div {
     position: absolute;
     left: 50%;
     top: var(--margin);
-    overflow-y: scroll;
+    overflow-y: auto;
 }

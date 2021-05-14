@@ -16,21 +16,15 @@ class CameraController {
     }
 
     update(position) {
-        // Changes the camera's rotation if the player is far enough from the center
-        const sqDistFromCenter = position.x ** 2 +
-                                position.y ** 2 + 
-                                position.z ** 2;
-        if (sqDistFromCenter > 15) {
-            _vector.subVectors(_zero, position).normalize();
+        _vector.subVectors(_zero, position).normalize();
 
-            this.camera.position.set(0, 0, 0);
+        this.camera.position.set(0, 0, 0);
     
-            this.camera.applyQuaternion(
-                _quaternion.setFromUnitVectors(this.up, _vector)
-            );
+        this.camera.applyQuaternion(
+            _quaternion.setFromUnitVectors(this.up, _vector)
+        );
     
-            this.up.copy(_vector);
-        }
+        this.up.copy(_vector);
 
         this.camera.position.set(position.x, position.y, position.z);
     }
