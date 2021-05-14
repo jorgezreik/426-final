@@ -297,10 +297,10 @@ class GrapplingController {
             if (this.rope.isAttached) {
                 if (this.rope.pullingPlayer) {
                     // Increates the players velocity towards the grappling hook's destination point
-                    this.acceleration.copy(_direction).multiplyScalar(-this.grappleFactor); 
+                    this.acceleration.copy(_direction).multiplyScalar(this.grappleFactor); 
                 }
                 else {
-                    this.acceleration.copy(_direction).multiplyScalar(-0.15 * this.grappleFactor); 
+                    this.acceleration.copy(_direction).multiplyScalar(0.15 * this.grappleFactor); 
                 }
             }
             else this.acceleration.set(0, 0, 0);

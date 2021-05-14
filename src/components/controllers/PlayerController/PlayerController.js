@@ -184,10 +184,8 @@ class PlayerController {
         this.state.acceleration.add(_cameraAcceleration);
 
         // Grappling acceleration
-        // if (_count % 60 === 0) console.log(_cameraAcceleration.clone());
-        // if (_count % 60 === 0) console.log(this.grapplingController.acceleration);
+        this.grapplingController.update(timeElapsed);
         this.state.acceleration.add(this.grapplingController.acceleration);
-        // if (_count % 60 === 0) console.log(this.state.acceleration.clone());
 
         // Air resistance
         _airVector
@@ -215,7 +213,7 @@ class PlayerController {
 
         this.lastTime = timeStamp;
 
-        if (_count % 60 === 0) console.table(this.state);
+        // if (_count % 60 === 0) console.table(this.state);
 
         // Reset grappling acceleration
         this.state.acceleration.sub(this.grapplingController.acceleration);
@@ -234,6 +232,8 @@ class PlayerController {
 
         // Set old position
         _oldPos.copy(this.state.position);
+        
+        if (_count % 60 === 0) console.table(this.state);
 
         // TODO: Remove
         if (_first) {
