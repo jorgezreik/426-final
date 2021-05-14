@@ -1,4 +1,4 @@
-import { Mesh, MeshPhongMaterial, Vector3, DoubleSide, Raycaster } from 'three';
+import { Mesh, MeshPhongMaterial, Vector3, DoubleSide, Raycaster, PointLight } from 'three';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import GEM1 from './gem1.obj'
 import GEM2 from './gem2.obj'
@@ -42,7 +42,8 @@ class Gem {
             shininess: 10,
             reflectivity: 10,
             specular: 10,
-            side: DoubleSide
+            side: DoubleSide,
+            emissive: 0x333377,
         });
         mat.flatShading = true;
         loader.load(_gems[rand], (obj) => {
@@ -52,6 +53,9 @@ class Gem {
                     child.material = mat;  
                 }
             });
+
+            // Add light
+            // this.obj.add(new PointLight(0xaaaaff, 1, 20));
 
             this.scene.add(this.obj);
             this.obj.visible = false;
