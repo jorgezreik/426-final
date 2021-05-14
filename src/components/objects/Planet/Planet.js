@@ -602,6 +602,20 @@ class Planet extends Group {
         this.vertexVectors = vertexVectors;
 
         geometry.computeVertexNormals();
+
+        // Generate normals as vectors
+        const normalVectors = [];
+        for (let i = 0; i < geometry.attributes.normal.array.length; i += 3) {
+            normalVectors.push(
+                new Vector3(
+                    geometry.attributes.normal.array[i],
+                    geometry.attributes.normal.array[i + 1],
+                    geometry.attributes.normal.array[i + 2]
+                )
+            );
+        }
+        this.normalVectors = normalVectors;
+
         outerGeometry.computeVertexNormals();
 
         const material = new MeshPhongMaterial({
@@ -633,9 +647,9 @@ class Planet extends Group {
             0xffffff,
             0x888888,
             0x1f5a1a,
-            0x1f5a1a,
+            0x214a1d,
             0xedce8f,
-            0x3341c3,
+            0x5463e3,
             0x3341c3,
         ];
 
