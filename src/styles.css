@@ -1,0 +1,104 @@
+/* Contains global variables used throughout this file */
+:root {
+  /* Main survey colors -------------------------*/
+  --main-color: #64969e;
+  /*---------------------------------------------*/
+  
+  /* Background Colors --------------------------*/
+  /* Color for the main survey box. */
+  --bg-color: #f1f1f1;
+  --bg-border: #f1f1f1;
+
+  /* Colors for Buttons -------------------------*/
+  /* Primary color of buttons and buttons' text. */
+  --btn-color: #64969e; 
+  --btn-text: white;
+  /* Color of buttons when pressed. */
+  --btn-pressed-color: #4f777d;
+  --btn-pressed-text: white;
+  /*---------------------------------------------*/
+}
+
+#rootDiv {
+    position: relative;
+}
+
+#scoreSpan {
+    font-size: 30px; 
+    color: white; 
+    font-family: Monoton; 
+    padding: 10px; 
+    position: absolute
+}
+
+/* Genere Classes -------------------------------*/
+/* Colors surveys content blocks */
+
+#menuDiv {
+    text-align: center;
+    justify-content: center
+}
+
+#titleSpan {
+    font-size: 150px; 
+    color: black; 
+    padding: 10px;
+    font-family: Monoton; 
+}
+
+/* Styles the buttons for navigating the survey */
+#playButton {
+    font-size: 30px; 
+    color: white; 
+    padding: 10px; 
+    background-color: var(--btn-color)!important;
+    border: solid 2px var(--btn-color);
+    color: var(--btn-text) !important;
+    outline: none !important;
+    min-height:38px;
+    font-family: Monoton; 
+    cursor: pointer;
+}
+#playButton.active, #playButton:active {
+    border: solid 2px var(--btn-pressed-color);
+    background-color: var(--btn-pressed-color)!important;
+    color: var(--btn-pressed-text)!important;
+}
+
+/* Styles the buttons for navigating the survey */
+#settingsButton {
+    font-size: 30px; 
+    color: white; 
+    padding: 10px; 
+    background-color: var(--btn-color)!important;
+    border: solid 2px var(--btn-color);
+    color: var(--btn-text) !important;
+    outline: none !important;
+    min-height:38px;
+    font-family: Monoton; 
+    cursor: pointer;
+}
+#settingsButton.active, #settingsButton:active {
+    border: solid 2px var(--btn-pressed-color);
+    background-color: var(--btn-pressed-color)!important;
+    color: var(--btn-pressed-text)!important;
+}
+
+/* Styles the buttons for navigating the survey */
+#creditsButton {
+    font-size: 30px; 
+    color: white; 
+    padding: 10px; 
+    background-color: var(--btn-color)!important;
+    border: solid 2px var(--btn-color);
+    color: var(--btn-text) !important;
+    outline: none !important;
+    min-height:38px;
+    font-family: Monoton; 
+    cursor: pointer;
+}
+#creditsButton.active, #creditsButton:active {
+    border: solid 2px var(--btn-pressed-color);
+    background-color: var(--btn-pressed-color)!important;
+    color: var(--btn-pressed-text)!important;
+}

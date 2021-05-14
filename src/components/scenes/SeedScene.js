@@ -23,7 +23,6 @@ class SeedScene extends Scene {
 
         // Add meshes to scene
         const planet = new Planet(this);
-        const gemGenerator = new GemGenerator(this);
         const lights = new BasicLights();
         this.add(planet, lights);
 

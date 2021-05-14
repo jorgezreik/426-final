@@ -187,8 +187,10 @@ class GrapplingController {
 
         this.state = state;
         this.movementFactor = movementFactor;
-
+        
         this.scene = scene;
+        this.terrain = this.scene.children[0].children[0];
+    
         this.rope = new Rope();
         document.addEventListener('mousedown', this.onMouseDown.bind(this));
         document.addEventListener('mouseup', this.onMouseUp.bind(this));
@@ -218,8 +220,7 @@ class GrapplingController {
                 this.shootingGrapple = true;
                 _counter = 0;
                 // Determines if the grapple hook intersects with any objects
-                const planet = this.scene.children[0];
-                const intersections = _raycaster.intersectObject(planet, true);
+                const intersections = _raycaster.intersectObject(this.terrain, true);
                 if (intersections.length > 0) {
                     const nearest = intersections[0];
                     if (nearest.distance < this.maxDist && nearest.distance > 0.03) {

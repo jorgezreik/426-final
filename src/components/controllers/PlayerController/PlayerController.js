@@ -38,6 +38,8 @@ class PlayerController {
             this.movementFactor, document, scene
         );
 
+        this.score = 0;
+
         document.addEventListener('mousedown', this.onMouseDown.bind(this));
         document.addEventListener('keydown', this.onKeyDown.bind(this));
         document.addEventListener('keyup', this.onKeyUp.bind(this));
