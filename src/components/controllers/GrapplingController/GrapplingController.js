@@ -166,7 +166,7 @@ class Rope {
 
 class GrapplingController {
     constructor(pointerLockController, state, grappleFactor, document, scene) {
-        this.maxDist = 25; // The maximum length of the grappling hook
+        this.maxDist = 100; // The maximum length of the grappling hook
 
         this.acceleration = new Vector3();
         this.increment = 1; // how much the counter is incremented

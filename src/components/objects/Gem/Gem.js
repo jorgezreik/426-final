@@ -92,7 +92,7 @@ class GemGenerator {
         // Minimum distance to keep gems away from the center
         this.minDistToCenter = 50;
         // Max number of gems on the screen at a given time
-        this.maxGemCount = 10;
+        this.maxGemCount = 20;
         
         // Sets up the raycaster
         _raycaster.ray.origin = _origin;
@@ -155,7 +155,7 @@ class GemGenerator {
                 if (gem.obj.visible) {
                     // Hides the gem and increments the players score if the gem
                     // is close enough
-                    if (gem.obj.position.distanceToSquared(playerPosition) < 5) {
+                    if (gem.obj.position.distanceToSquared(playerPosition) < 16) {
                         this.playerController.score += 5;
                         gem.hide()
                         console.log(this.playerController.score);

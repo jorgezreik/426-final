@@ -25,11 +25,11 @@ class Planet extends Group {
             gui: parent.state.gui,
             resolution: 150,
             factor: 7,
-            sharpnessFactor: 2,
+            sharpnessFactor: 3,
             sharpnessDepth: 3,
-            threshold: 0.3,
+            threshold: 0.25,
             scale: 200,
-            distWeight: 0.3,
+            distWeight: 0.25,
         };
 
         this.name = 'planet';

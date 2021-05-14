@@ -7,7 +7,7 @@ const _quaternion = new Quaternion();
 const _posY = new Vector3(0, 1, 0);
 const _v = new Vector3();
 const _v2 = new Vector3();
-const _airResistance = 0.03;
+const _airResistance = 0.015;
 const _airVector = new Vector3();
 let _cameraAcceleration = new Vector3();
 
@@ -45,7 +45,7 @@ class PlayerController {
 
         this.movementFactor = 10;
 
-        this.grappleFactor = 20;
+        this.grappleFactor = 50;
 
         this.grapplingController = new GrapplingController(
             this.controls,
@@ -203,17 +203,12 @@ class PlayerController {
         // Interpolate velocity to position
         this.state.position.addScaledVector(this.state.velocity, timeElapsed);
 
-        // Grappling hook may also update position
-        this.grapplingController.update(timeElapsed);
-
         // Check collision
         this.checkCollision(timeElapsed);
 
         this.cameraController.update(this.state.position);
 
         this.lastTime = timeStamp;
-
-        // if (_count % 60 === 0) console.table(this.state);
 
         // Reset grappling acceleration
         this.state.acceleration.sub(this.grapplingController.acceleration);
