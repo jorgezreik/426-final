@@ -45,10 +45,12 @@ class PlayerController {
 
         this.movementFactor = 10;
 
+        this.grappleFactor = 20;
+
         this.grapplingController = new GrapplingController(
             this.controls,
             this.state,
-            this.movementFactor,
+            this.grappleFactor,
             document,
             scene
         );
@@ -182,7 +184,10 @@ class PlayerController {
         this.state.acceleration.add(_cameraAcceleration);
 
         // Grappling acceleration
+        // if (_count % 60 === 0) console.log(_cameraAcceleration.clone());
+        // if (_count % 60 === 0) console.log(this.grapplingController.acceleration);
         this.state.acceleration.add(this.grapplingController.acceleration);
+        // if (_count % 60 === 0) console.log(this.state.acceleration.clone());
 
         // Air resistance
         _airVector

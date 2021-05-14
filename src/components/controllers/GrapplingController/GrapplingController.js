@@ -165,10 +165,10 @@ class Rope {
 }
 
 class GrapplingController {
-    constructor(pointerLockController, state, movementFactor, document, scene) {
+    constructor(pointerLockController, state, grappleFactor, document, scene) {
         this.maxDist = 25; // The maximum length of the grappling hook
 
-        this.velocity = new Vector3();
+        this.acceleration = new Vector3();
         this.increment = 1; // how much the counter is incremented
         
 
@@ -186,7 +186,7 @@ class GrapplingController {
         _raycaster.ray.direction = _direction;
 
         this.state = state;
-        this.movementFactor = movementFactor;
+        this.grappleFactor = grappleFactor;
         
         this.scene = scene;
         this.terrain = this.scene.children[0].children[0];
@@ -289,7 +289,7 @@ class GrapplingController {
 
             _origin.set(0.75, -0.35, 0);
             this.camera.localToWorld(_origin);
-            _origin.addScaledVector(this.state.velocity, timeElapsed * this.movementFactor);
+            // _origin.addScaledVector(this.state.velocity, timeElapsed * this.movementFactor);
             _direction.subVectors(_destination, _origin).normalize();
             _distance = _destination.distanceTo(_origin);
 
@@ -297,16 +297,13 @@ class GrapplingController {
             if (this.rope.isAttached) {
                 if (this.rope.pullingPlayer) {
                     // Increates the players velocity towards the grappling hook's destination point
-                    this.velocity.addScaledVector(_direction, 0.1 * timeElapsed *this.movementFactor); 
+                    this.acceleration.copy(_direction).multiplyScalar(-this.grappleFactor); 
                 }
                 else {
-                    // Prevents the player from moving too far from the grappling hook
-                    this.state.position.addScaledVector(_direction, 0.5*timeElapsed * (_distance-this.rope.restLength/_distance));
-                    if (_distance > this.rope.restLength) {
-                        this.velocity.addScaledVector(_direction, 0.005 * timeElapsed * (_distance-this.rope.restLength/_distance));
-                    }
-                } 
+                    this.acceleration.copy(_direction).multiplyScalar(-0.15 * this.grappleFactor); 
+                }
             }
+            else this.acceleration.set(0, 0, 0);
             this.rope.update();
         }
     }
