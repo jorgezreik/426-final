@@ -20,7 +20,7 @@ const _position = new Vector3();
 const _verletDiff = new Vector3();
 
 // For the delay of the rope's attachment
-const _delay = 10;
+const _delay = 25;
 let _counter = 0;
 
 // Grappling hook variables
@@ -95,7 +95,7 @@ class Rope {
             for (let i = 0; i < this.positions.length; i += 3) {
                 // If the physics simulation is activated, updates its particles
                 if (_physicsRope && j < this.particles.length)
-                    this.particles[j].setPosition(_position);
+                    this.particles[j].setPosition(_position, false);
 
                 // Sets up the current pair of points for the LineSegment geometry
                 this.positions[2 * i] = _position.x;
@@ -122,7 +122,7 @@ class Rope {
         // for the attached rope
         this.updateAttachedRope = function(timeElapsed){
             if (_distance <= this.restLength) {
-                this.restDist = _distance/(_delay+1)
+                this.restDist = _distance/(_delay*+2)
             }
 
             let j = 0;
@@ -160,7 +160,7 @@ class Rope {
     }
 
     // Updates the rope
-    update(timeElapsed, velocity) {
+    update(timeElapsed) {
         if (this.fired || this.returning || this.isAttached) {    
             _counter += this.fired ? this.increment : this.returning ? -this.increment : 0;
             if (_counter >= _delay && !this.isAttached) {
@@ -179,7 +179,6 @@ class Rope {
 
             _origin.set(0.75, -0.35, 0);
             this.camera.localToWorld(_origin);
-            _origin.addScaledVector(velocity, timeElapsed);
             _direction.subVectors(_destination, _origin).normalize();
             _distance = _destination.distanceTo(_origin);
 

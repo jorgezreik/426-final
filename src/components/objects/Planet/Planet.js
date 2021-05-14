@@ -22,7 +22,6 @@ class Planet extends Group {
 
         // Init state
         this.state = {
-            gui: parent.state.gui,
             resolution: 150,
             factor: 7,
             sharpnessFactor: 3,
@@ -350,30 +349,6 @@ class Planet extends Group {
 
         // Add self to parent's update list
         parent.addToUpdateList(this);
-
-        const boundInitialize = this.initialize.bind(this);
-        // Populate GUI
-        this.state.gui
-            .add(this.state, 'resolution', 2, 300, 1)
-            .onFinishChange(boundInitialize);
-        this.state.gui
-            .add(this.state, 'factor', 1, 10)
-            .onFinishChange(boundInitialize);
-        this.state.gui
-            .add(this.state, 'sharpnessFactor', 1, 10)
-            .onFinishChange(boundInitialize);
-        this.state.gui
-            .add(this.state, 'sharpnessDepth', 1, 10, 1)
-            .onFinishChange(boundInitialize);
-        this.state.gui
-            .add(this.state, 'threshold', 0, 1)
-            .onFinishChange(boundInitialize);
-        this.state.gui
-            .add(this.state, 'scale', 1, 200)
-            .onFinishChange(boundInitialize);
-        this.state.gui
-            .add(this.state, 'distWeight', 0, 1)
-            .onFinishChange(boundInitialize);
     }
 
     initialize() {
@@ -803,8 +778,19 @@ class Planet extends Group {
         return cubeIndex;
     }
 
-    update(timeStamp) {
-        return;
+    update(timeStamp, isMenu) {
+        if (isMenu) {
+            if (this.lastTime === undefined) {
+                this.lastTime = timeStamp;
+                return;
+            }
+            const timeElapsed = (timeStamp - this.lastTime) / 1000;
+            this.rotateY(0.1 * timeElapsed);
+            this.rotateX(0.05 * timeElapsed);
+            this.rotateZ(0.05 * timeElapsed);
+            this.lastTime = timeStamp;
+        }
+        else this.rotation.set(0,0,0);
     }
 }
 

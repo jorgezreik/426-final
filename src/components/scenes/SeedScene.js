@@ -11,7 +11,6 @@ class SeedScene extends Scene {
 
         // Init state
         this.state = {
-            gui: new Dat.GUI(), // Create GUI for scene
             updateList: [],
             fogColor: 0x333355,
             nearPlane: 25,
@@ -32,15 +31,6 @@ class SeedScene extends Scene {
             this.state.farPlane
         );
 
-        this.state.gui
-            .addColor(this.state, 'fogColor')
-            .onChange(this.updateFog.bind(this));
-        this.state.gui
-            .add(this.state, 'nearPlane', 0, 150)
-            .onChange(this.updateFog.bind(this));
-        this.state.gui
-            .add(this.state, 'farPlane', 0, 150)
-            .onChange(this.updateFog.bind(this));
     }
 
     updateFog() {
@@ -55,12 +45,12 @@ class SeedScene extends Scene {
         this.state.updateList.push(object);
     }
 
-    update(timeStamp) {
+    update(timeStamp, isMenu) {
         const { fogColor, nearPlane, farPlane, updateList } = this.state;
 
         // Call update for each object in the updateList
         for (const obj of updateList) {
-            obj.update(timeStamp);
+            obj.update(timeStamp, isMenu);
         }
     }
 }

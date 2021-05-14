@@ -102,7 +102,9 @@ class GemGenerator {
         this.minDistToCenter = 50;
         // Max number of gems on the screen at a given time
         this.maxGemCount = 20;
-        
+        // How much the player's score increases per gem
+        this.gemValue = 100;
+    
         // Sets up the raycaster
         _raycaster.ray.origin = _origin;
         _raycaster.ray.direction = _direction;
@@ -165,7 +167,7 @@ class GemGenerator {
                     // Hides the gem and increments the players score if the gem
                     // is close enough
                     if (gem.obj.position.distanceToSquared(playerPosition) < 16) {
-                        this.playerController.score += 5;
+                        this.playerController.score += this.gemValue;
                         gem.hide()
                         console.log(this.playerController.score);
                     }

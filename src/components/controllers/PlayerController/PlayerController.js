@@ -199,9 +199,6 @@ class PlayerController {
             this.state.acceleration,
             timeElapsed
         );
-        
-        // Updates
-        this.grapplingController.rope.update(timeElapsed, this.state.velocity);
 
         // Interpolate velocity to position
         this.state.position.addScaledVector(this.state.velocity, timeElapsed);
@@ -210,6 +207,9 @@ class PlayerController {
         this.checkCollision(timeElapsed);
 
         this.cameraController.update(this.state.position);
+
+        // Updates the rope of the grappling controller
+        this.grapplingController.rope.update(timeElapsed);
 
         
 

@@ -1,39 +1,62 @@
-/* Contains global variables used throughout this file */
-:root {
-  /* Main survey colors -------------------------*/
-  --main-color: #64969e;
-  /*---------------------------------------------*/
-  
-  /* Background Colors --------------------------*/
-  /* Color for the main survey box. */
-  --bg-color: #f1f1f1;
-  --bg-border: #f1f1f1;
+@import '~material-icons/iconfont/material-icons.css';
 
-  /* Colors for Buttons -------------------------*/
-  /* Primary color of buttons and buttons' text. */
-  --btn-color: #64969e; 
-  --btn-text: white;
-  /* Color of buttons when pressed. */
-  --btn-pressed-color: #4f777d;
-  --btn-pressed-text: white;
+:root {
+
+  --main-color: #64969e;
+
+  --text-color: #fff8e5;
+  
+  --main-font: Major Mono Display;
+  --secondary-font: Montserrat;
+  --score-font: Share Tech Mono;
+
+  --width: 45%;
+  --margin: 2.5%
   /*---------------------------------------------*/
 }
+html {
+    height: 100vh;
+    padding: 0px;
+    margin: 0px;
+}
+body {
+    min-height: 100vh;
+    width: 100%;
+    margin: 0px;
+    padding: 0px;
+    overflow: hidden;
+}
 
-#rootDiv {
+canvas {
+    display: block;
+    position: absolute
+}
+
+div {
+    min-height: 100vh;
+    text-align: center;
+    justify-content: center;
     position: relative;
 }
 
 #scoreSpan {
-    font-size: 30px; 
-    color: white; 
-    font-family: Monoton; 
-    padding: 10px; 
-    position: absolute
+    font-size: 1.5vw; 
+    color: var(--text-color); 
+    font-family: var(--score-font);
+    padding: 0.5%;
+    position: fixed;
+    text-align: center;
+    background-color: rgba(71, 126, 223, 0.5);
+    border: 1px solid var(--text-color);
+    border-radius: 5px;
+    top: 1%;
+    left: 1%;
+    
 }
 
 #reticle {
     font-size: 25px;
-    color: white;
+    color: #fff8e5;
     position: fixed;
     opacity: 0.9;
     top:  50%;
@@ -41,74 +64,118 @@
     transform: translate(-50%,-50%);
 }
 
-/* Genere Classes -------------------------------*/
-/* Colors surveys content blocks */
 
-#menuDiv {
-    text-align: center;
-    justify-content: center
+/* width */
+::-webkit-scrollbar {
+    width: 15px;
+}
+  
+/* Track */
+::-webkit-scrollbar-track {
+    background: #fff8e5;
+    border-radius:10px;
+}
+   
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #bfbcf4;
+    border-radius:10px;
+}
+  
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #9995ee;
 }
 
-#titleSpan {
-    font-size: 150px; 
-    color: black; 
-    padding: 10px;
-    font-family: Monoton; 
+
+#title {
+    font-size: 8vw;
+    width: 43%;
+    color: var(--text-color);
+    text-align: left;
+    background-color: rgba(71, 126, 223, 0.5);
+    border: 2.5px solid var(--text-color);
+    border-radius: 10px;
+    padding-left: 2%;
+    font-family: var(--main-font); 
+    position: absolute;
+    left: var(--margin);
+    top: var(--margin);
 }
 
-/* Styles the buttons for navigating the survey */
 #playButton {
-    font-size: 30px; 
-    color: white; 
+    font-size: 4vw;
+    width: var(--width);
     padding: 10px; 
-    background-color: var(--btn-color)!important;
-    border: solid 2px var(--btn-color);
-    color: var(--btn-text) !important;
+    background-color:rgba(153, 149, 238, 0.5);
+    border: 2.5px solid var(--text-color);
+    border-radius: 10px;
+    color: var(--text-color);  
     outline: none !important;
-    min-height:38px;
-    font-family: Monoton; 
+    margin: 5px;
+    font-family: var(--main-font);
     cursor: pointer;
+    position: absolute;
+    left: var(--margin);
+    top: 45%;
 }
 #playButton.active, #playButton:active {
-    border: solid 2px var(--btn-pressed-color);
-    background-color: var(--btn-pressed-color)!important;
-    color: var(--btn-pressed-text)!important;
+    background-color: #9995ee; 
 }
 
-/* Styles the buttons for navigating the survey */
-#settingsButton {
-    font-size: 30px; 
-    color: white; 
+#instButton {
+    font-size: 4vw;
+    width: var(--width);
     padding: 10px; 
-    background-color: var(--btn-color)!important;
-    border: solid 2px var(--btn-color);
-    color: var(--btn-text) !important;
+    background-color: rgba(191, 188, 244, 0.5);
+    color: var(--text-color);  
     outline: none !important;
-    min-height:38px;
-    font-family: Monoton; 
+    border: 2.5px solid var(--text-color);
+    border-radius: 10px;
+    margin: 5px;
+    font-family: var(--main-font);
     cursor: pointer;
+    position: absolute;
+    left: var(--margin);
+    top: 65%;
 }
-#settingsButton.active, #settingsButton:active {
-    border: solid 2px var(--btn-pressed-color);
-    background-color: var(--btn-pressed-color)!important;
-    color: var(--btn-pressed-text)!important;
+#instButton.active, #instButton:active {
+    background-color: #bfbcf4;
 }
 
-/* Styles the buttons for navigating the survey */
 #creditsButton {
-    font-size: 30px; 
-    color: white; 
+    font-size: 4vw;
+    width: var(--width);
     padding: 10px; 
-    background-color: var(--btn-color)!important;
-    border: solid 2px var(--btn-color);
-    color: var(--btn-text) !important;
+    background-color: rgba(183, 145, 203, 0.5);
+    color: var(--text-color);  
     outline: none !important;
-    min-height:38px;
-    font-family: Monoton; 
+    border: 2.5px solid var(--text-color);
+    border-radius: 10px;
+    margin: 5px;
+    font-family: var(--main-font); 
     cursor: pointer;
+    position: absolute;
+    left: var(--margin);
+    bottom: var(--margin);
 }
 #creditsButton.active, #creditsButton:active {
-    border: solid 2px var(--btn-pressed-color);
-    background-color: var(--btn-pressed-color)!important;
-    color: var(--btn-pressed-text)!important;
+    background-color: #b791cb;
+}
+
+.infoSpan {
+    font-size: 2.5vw;
+    height: 91.25%;
+    width: var(--width);
+    text-align: left;
+    color: var(--text-color);  
+    background-color: rgba(71, 126, 223, 0.5);
+    border: 2.5px solid var(--text-color);
+    border-radius: 15px;
+    padding: 10px;
+    font-family: var(--secondary-font); 
+    position: absolute;
+    left: 50%;
+    top: var(--margin);
+    overflow-y: scroll;
 }
