@@ -11,13 +11,21 @@
  import { SeedScene } from 'scenes';
  import { GemGenerator } from 'objects';
  import "./styles.css";
+ //import "/node_modules/material-icons/iconfont/material-icons.css";
  
 // Appends the link for the Google font on top (a bit WIP)
-let link = document.createElement('link');
-link.setAttribute('rel', 'stylesheet');
-link.setAttribute('type', 'text/css');
-link.setAttribute('href', 'https://fonts.googleapis.com/css?family=Monoton');
-document.head.appendChild(link);
+let link1 = document.createElement('link');
+link1.setAttribute('rel', 'stylesheet');
+link1.setAttribute('type', 'text/css');
+link1.setAttribute('href', 'https://fonts.googleapis.com/css?family=Monoton');
+document.head.appendChild(link1);
+
+// Appends the link for the Google font on top (a bit WIP)
+let link2 = document.createElement('link');
+link2.setAttribute('rel', 'stylesheet');
+link2.setAttribute('type', 'text/css');
+link2.setAttribute('href', '/node_modules/material-icons/iconfont/material-icons.css');
+document.head.appendChild(link2);
 
 // Creates a new root div
 let rootDiv = document.createElement("DIV");
@@ -28,6 +36,12 @@ let scoreSpan = document.createElement("SPAN");
 scoreSpan.innerHTML = "Score: 0";
 scoreSpan.id = "scoreSpan";
 rootDiv.appendChild(scoreSpan);
+
+let reticle = document.createElement("SPAN");
+reticle.innerHTML = "circle";
+reticle.classList.add("material-icons-outlined") 
+reticle.id = "reticle";
+rootDiv.appendChild(reticle);
  
  // Initialize core ThreeJS components
  const scene = new SeedScene();

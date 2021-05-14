@@ -1,12 +1,17 @@
 import { Mesh, MeshPhongMaterial, Vector3, DoubleSide, Raycaster } from 'three';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+import GEM1 from './gem1.obj'
+import GEM2 from './gem2.obj'
+import GEM3 from './gem3.obj'
+import GEM4 from './gem4.obj'
+import GEM5 from './gem5.obj'
 
 // File locations for the gems
-const _gems = ['./src/components/objects/Gem/gem1.obj',
-                './src/components/objects/Gem/gem2.obj',
-                './src/components/objects/Gem/gem3.obj',
-                './src/components/objects/Gem/gem4.obj',
-                './src/components/objects/Gem/gem5.obj'];
+const _gems = [GEM1,
+               GEM2,
+               GEM3,
+               GEM4,
+               GEM5];
 
 // Color palette from:
 // https://www.color-hex.com/color-palette/25406
