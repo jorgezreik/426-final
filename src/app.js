@@ -83,7 +83,7 @@ function initMenu() {
     
     // Adds the title to the screen
     let titleSpan = document.createElement("SPAN");
-    titleSpan.innerHTML = "CORE CRAWLER";
+    titleSpan.innerHTML = "PLANET PATROLLER";
     titleSpan.id = "title";
     menuDiv.appendChild(titleSpan);
 
