@@ -138,7 +138,7 @@ class GemGenerator {
                     const sqDistFromCenter = _position.x ** 2 +
                                             _position.y ** 2 + 
                                             _position.z ** 2;
-                    if (sqDistFromCenter > this.minDistToCenter) {
+                    if (sqDistFromCenter > this.minDistToCenter ** 2) {
                         // Sets the position of the gem and shows it
                         gem.setPosition(_position);
                         gem.show();

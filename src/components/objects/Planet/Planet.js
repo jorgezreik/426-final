@@ -634,7 +634,7 @@ class Planet extends Group {
         const colorAttribute = [];
         const verts = geometry.attributes.position.array;
         for (let i = 0; i < verts.length; i += 3) {
-            const dist = Math.min(
+            let dist = Math.min(
                 1,
                 Math.sqrt(
                     ((verts[i] / scale) * 2) ** 2 +

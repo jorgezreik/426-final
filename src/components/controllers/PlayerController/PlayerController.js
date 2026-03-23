@@ -71,15 +71,19 @@ class PlayerController {
 
         switch (event.key) {
             case 'w':
+            case 'ArrowUp':
                 a.z = -1;
                 break;
             case 'a':
+            case 'ArrowLeft':
                 a.x = -1;
                 break;
             case 's':
+            case 'ArrowDown':
                 a.z = 1;
                 break;
             case 'd':
+            case 'ArrowRight':
                 a.x = 1;
                 break;
             case ' ':
@@ -98,15 +102,19 @@ class PlayerController {
 
         switch (event.key) {
             case 'w':
+            case 'ArrowUp':
                 a.z = 0;
                 break;
             case 'a':
+            case 'ArrowLeft':
                 a.x = 0;
                 break;
             case 's':
+            case 'ArrowDown':
                 a.z = 0;
                 break;
             case 'd':
+            case 'ArrowRight':
                 a.x = 0;
                 break;
             case ' ':
